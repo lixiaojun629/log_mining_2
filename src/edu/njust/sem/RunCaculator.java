@@ -6,6 +6,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.njust.sem.graph.Graph;
+import edu.njust.sem.graph.Tree;
+import edu.njust.sem.graph.Vertex;
 import edu.njust.sem.util.PrintUtil;
 
 public class RunCaculator {
@@ -13,19 +16,15 @@ public class RunCaculator {
 	private static Cluster cluster = new Cluster();
 	private static CatalogFreq catalogFreq;
 
-	private static void makeTree(Integer[] path) throws SQLException {
+	private static Tree makeTree(Integer[] path) throws SQLException {
 		catalogFreq = new CatalogFreq(path);
 		double[][] catalogFreqMatrix = catalogFreq.getCatalogFreqMatrix();
 		System.out.println("目录频次倒数矩阵----------------------------");
 		PrintUtil.printMatrix(catalogFreqMatrix);
-		List<String> verts = catalogFreq.getVertexs();
-		Graph graph = new Graph(catalogFreqMatrix, verts);
-		System.out.println("最小生成树---------------------------------");
-		graph.createMinSpanningTree();
-		System.out.println("所有顶点-----------------------------------");
-		for (String str : verts) {
-			System.out.println(str);
-		}
+		Vertex[] vertexs = catalogFreq.getVertexs();
+		Graph graph = new Graph(catalogFreqMatrix, vertexs);
+		Tree tree = graph.createMinSpanningTree();
+		return tree;
 	}
 
 	/**
