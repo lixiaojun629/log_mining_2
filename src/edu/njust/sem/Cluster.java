@@ -208,11 +208,11 @@ public class Cluster {
 		matrix = cluster.transformMatrix(matrix);
 		File file = new File("test1.txt");
 		PrintUtil.setOut(file);
-		PrintUtil.printMatrix(matrix);
+		PrintUtil.printMatrixToFile(matrix);
 		List<double[][]> matrixs = cluster.getMarixList(matrix);
 		for(double[][] m : matrixs){
 			PrintUtil.println("×Ó¿é¾ØÕó£º");
-			PrintUtil.printMatrix(m);
+			PrintUtil.printMatrixToFile(m);
 		}
 		PrintUtil.close();
 	}

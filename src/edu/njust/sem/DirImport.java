@@ -44,13 +44,11 @@ public class DirImport {
 			id[i] = 0;
 		}
 	}
-	 
-	public void run() {
 
+	public void run() {
 		try {
 			wb = Workbook.getWorkbook(file);
 		} catch (BiffException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		sheet = wb.getSheet(0);
@@ -72,7 +70,6 @@ public class DirImport {
 							id[k] = 0;
 						}
 					}
-
 					dir[j] = cell[j].getContents();
 					for (int k = 0; k < 3; k++) {
 						ID += id[k] * Math.pow(10, (2 - k) * 2);
@@ -93,7 +90,7 @@ public class DirImport {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		DirImport di = new DirImport();
 		di.run();

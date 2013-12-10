@@ -21,8 +21,8 @@ public class Similarity {
 	}
 
 	public double[][] getSimilarityMatrix() {
-		String queryDirPath = "select session_id ,catalog_id from tab_catalogs2 where session_id = ?";
-		String queryPathCount = "select session_id from tab_catalogs2 order by 1 desc limit 1";
+		String queryDirPath = "select session_id ,catalog_id from tab_catalogs where session_id = ?";
+		String queryPathCount = "select session_id from tab_catalogs order by 1 desc limit 1";
 		Statement stmt = null;
 		PreparedStatement psDirPath = null;
 		ResultSet rsDirPath = null;

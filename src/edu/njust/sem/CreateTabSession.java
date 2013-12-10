@@ -13,8 +13,8 @@ import edu.njust.sem.util.DBUtil;
 
 public class CreateTabSession {
 	Connection conn = DBUtil.getConn();
-	String query = "select user_id,resource,referer,ip,visit_time from tab_first_no order by user_id,visit_time";
-	String insert = "insert into tab_session(session_id,url_id,user_id,ip,visit_time)values(?,?,?,?,?)";
+	String query = "select user_id,resource,referer,visit_time from tab_first_no order by user_id,visit_time";
+	String insert = "insert into tab_session(session_id,url_id,user_id,visit_time)values(?,?,?,?)";
 	int count = 0;
 	int userPre = 0;
 	int userNow = 0;
@@ -22,7 +22,6 @@ public class CreateTabSession {
 	Timestamp datePre = null;
 	Timestamp dateNow = null;
 	ArrayList<Integer> sessionUrls = new ArrayList<>();
-	ArrayList<String> ips = new ArrayList<>();
 	ArrayList<Timestamp> times = new ArrayList<>();
 	PreparedStatement ps = null;
 	ResultSet rs = null;
@@ -50,21 +49,19 @@ public class CreateTabSession {
 
 				datePre = dateNow;
 				dateNow = rs.getTimestamp("visit_time");
+				int referer = rs.getInt("referer");
 				System.out.println(dateNow.getTime() - datePre.getTime());
-				// 如果相邻的两条记录中的user不相同，或者时间超过30分钟，则不能视为同一个会话，把已经识别的会话路径插入到数据库中
-				if (userPre != userNow
-						|| (dateNow.getTime() - datePre.getTime())
-								/ (1000 * 60) >= 30) {
+				// 如果相邻的两条记录中referer为空，或user不相同，或时间超过30分钟，则不能视为同一个会话，把已经识别的会话路径插入到数据库中
+				if (referer < 0|| userPre != userNow|| (dateNow.getTime() - datePre.getTime())/ (1000 * 60) >= 30) {
 					insertToDB();//
 					System.out.println("new session--------------------------");
-					add(rs.getInt("referer"), rs.getString("ip"),rs.getTimestamp("visit_time"));
-					add(rs.getInt("resource"), rs.getString("ip"),rs.getTimestamp("visit_time"));
+					add(rs.getInt("referer"), rs.getTimestamp("visit_time"));
 				} else {
-					add(rs.getInt("referer"), rs.getString("ip"),rs.getTimestamp("visit_time"));
-					add(rs.getInt("resource"), rs.getString("ip"),rs.getTimestamp("visit_time"));
+					add(rs.getInt("referer"), rs.getTimestamp("visit_time"));
+					add(rs.getInt("resource"), rs.getTimestamp("visit_time"));
 				}
 			} while (rs.next());
-			 
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -72,34 +69,30 @@ public class CreateTabSession {
 
 	private void insertToDB() throws SQLException {
 		if (sessionUrls.size() > 1) {
-			if (sessionUrls.size() != ips.size()
-					|| sessionUrls.size() != times.size()) {
+			if (sessionUrls.size() != times.size()) {
 				throw new RuntimeException("路径中ip字段或时间字段都不能为空！");
 			}
 			for (int i = 0; i < sessionUrls.size(); i++, count++) {
 				ps.setInt(1, sessionID);
 				ps.setInt(2, sessionUrls.get(i));
 				ps.setInt(3, userPre);
-				ps.setString(4, ips.get(i));
-				ps.setTimestamp(5, times.get(i));
+				ps.setTimestamp(4, times.get(i));
 				ps.executeUpdate();
 			}
 			sessionID++;
 		}
 		sessionUrls.clear();
-		ips.clear();
 		times.clear();
 	}
 
-	private void add(int urlId, String ip, Timestamp timestamp) {
+	private void add(int urlId, Timestamp timestamp) {
 		if (urlId > 0
 				&& (sessionUrls.isEmpty() || urlId != sessionUrls
 						.get(sessionUrls.size() - 1))) {
-			if (ip == null || timestamp == null || ip.length() == 0) {
+			if (timestamp == null) {
 				throw new RuntimeException("路径中ip字段或时间字段都不能为空！");
 			}
 			sessionUrls.add(urlId);
-			ips.add(ip);
 			times.add(timestamp);
 		}
 	}

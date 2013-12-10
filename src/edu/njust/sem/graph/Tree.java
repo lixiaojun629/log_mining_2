@@ -13,40 +13,15 @@ import java.util.Map;
  */
 public class Tree {
 	// 顶点集合
-	private Vertex[] vertexs;
+	private List<Vertex> vertexs = new ArrayList<>();
 	// 邻接表
-	private Map<Integer, List<Integer>> adjTable = new HashMap<>();
-	// 存储每个点的邻接点集合的数组
-	private List<Integer>[] adjVertexArray;
-	// 邻接矩阵
-	private int[][] adjMatrix;
+	private Map<Vertex, List<Vertex>> adjTable = new HashMap<>();
 	// 表示任意两个点之间的距离的矩阵
 	private int[][] userMatrix;
-	private final int length;
 	private int[][] siteMatrix;
 
-	@SuppressWarnings("unchecked")
-	public Tree(Vertex[] vertexs) {
-		this.vertexs = vertexs;
-		length = vertexs.length;
-		adjVertexArray = new ArrayList[length];
-		for (int i = 0; i < length; i++) {
-			adjVertexArray[i] = new ArrayList<Integer>();
-			adjTable.put(i, adjVertexArray[i]);
-		}
-		adjMatrix = new int[length][length];
-		userMatrix = new int[length][length];
-	}
-
-	@SuppressWarnings("unchecked")
-	public Tree(Vertex[] vertexs, Map<Integer, List<Integer>> adjTable) {
-		this.vertexs = vertexs;
-		this.adjTable = adjTable;
-		length = vertexs.length;
-	}
-
-	public void setAdjTable(Map<Integer, List<Integer>> adjTable) {
-		this.adjTable = adjTable;
+	public List<Vertex> getVertexs() {
+		return vertexs;
 	}
 
 	/**
@@ -55,10 +30,22 @@ public class Tree {
 	 * @param src
 	 * @param dest
 	 */
-	public void addEdge(int src, int dest) {
-		System.out.println(src + "->" + dest);
-		adjVertexArray[src].add(dest);
-		adjVertexArray[dest].add(src);
+	public void addEdge(Vertex src, Vertex dest) {
+		// System.out.println(src.dirId + "->" + dest.dirId);
+		addToAdjTable(src, dest);
+		addToAdjTable(dest, src);
+	}
+
+	private void addToAdjTable(Vertex src, Vertex dest) {
+		List<Vertex> adjVs = adjTable.get(src);
+		if (adjVs == null) {
+			List<Vertex> adja = new ArrayList<>();
+			adja.add(dest);
+			adjTable.put(src, adja);
+			vertexs.add(src);
+		} else {
+			adjVs.add(dest);
+		}
 	}
 
 	/**
@@ -71,15 +58,17 @@ public class Tree {
 	 * @param distance
 	 *            起点与正在访问的点之间的距离
 	 */
-	public void depthFirstSearch(int start, int curr, int distance) {
+	public void depthFirstSearch(Vertex start, Vertex curr, int distance) {
 		// 标识该点已访问过
-		vertexs[curr].flag = true;
-		userMatrix[start][curr] = distance;
+		curr.flag = true;
+		int s = vertexs.indexOf(start);
+		int c = vertexs.indexOf(curr);
+		userMatrix[s][c] = distance;
 		++distance;
-		List<Integer> adjVertexs = adjTable.get(curr);
-		for (int dest : adjVertexs) {
+		List<Vertex> adjVertexs = adjTable.get(curr);
+		for (Vertex dest : adjVertexs) {
 			// 如果该点未被访问过
-			if (!vertexs[dest].flag) {
+			if (!dest.flag) {
 				depthFirstSearch(start, dest, distance);
 			}
 		}
@@ -92,8 +81,10 @@ public class Tree {
 	 * @return 存储图中任意两点之间距离的矩阵
 	 */
 	public int[][] getUserMatrix() {
-		for (int i = 0; i < vertexs.length; i++) {
-			depthFirstSearch(i, i, 0);
+		int length = vertexs.size();
+		userMatrix = new int[length][length];
+		for (int i = 0; i < vertexs.size(); i++) {
+			depthFirstSearch(vertexs.get(i), vertexs.get(i), 0);
 			// 每次遍历完以后把各个顶点的标志位还原
 			for (Vertex v : vertexs) {
 				v.flag = false;
@@ -108,13 +99,14 @@ public class Tree {
 	 * @return
 	 */
 	public int[][] getSiteMatrix() {
+		int length = vertexs.size();
 		siteMatrix = new int[length][length];
 		for (int i = 0; i < length; i++) {
 			for (int j = i + 1; j < length; j++) {
-				int sameDegree = getSameDegree(vertexs[i].dirId,
-						vertexs[j].dirId);
-				siteMatrix[i][j] = vertexs[i].degree + vertexs[j].degree
-						- sameDegree * 2;
+				int sameDegree = getSameDegree(vertexs.get(i).dirId,
+						vertexs.get(j).dirId);
+				siteMatrix[i][j] = vertexs.get(i).degree
+						+ vertexs.get(j).degree - sameDegree * 2;
 			}
 		}
 		return siteMatrix;
@@ -129,7 +121,7 @@ public class Tree {
 	 *            目录2的dirId
 	 * @return 最低共同上级目录的等级
 	 */
-	public int getSameDegree(int a, int b) {
+	private int getSameDegree(int a, int b) {
 		int sameDegree = 3;
 		while (a != b) {
 			a /= 100;
@@ -138,38 +130,103 @@ public class Tree {
 		}
 		return sameDegree;
 	}
+
 	/**
 	 * 计算全局相关系数
+	 * 
 	 * @return
 	 */
 	public double getGTDCC() {
-		double[] vectorA = toMinusAvgArray(userMatrix);
-		double[] vectorB = toMinusAvgArray(siteMatrix);
+		double[] vectorA = toArray(userMatrix);
+		double[] vectorB = toArray(siteMatrix);
+		return getCorrelationIndex(vectorA, vectorB);
+	}
+	/**
+	 * 获取两个向量之间的相关系数
+	 * @param vectorA
+	 * @param vectorB
+	 * @return
+	 */
+	private double getCorrelationIndex(double[] vectorA, double[] vectorB) {
+		minusAvg(vectorA);
+		minusAvg(vectorB);
 		double a = 0;
 		double m1 = 0;
 		double m2 = 0;
 		for (int i = 0, l = vectorA.length; i < l; i++) {
-			a += vectorA[i]*vectorB[i];
-			m1 += vectorA[i]*vectorA[i];
-			m2 += vectorB[i]*vectorB[i];
+			a += vectorA[i] * vectorB[i];
+			m1 += vectorA[i] * vectorA[i];
+			m2 += vectorB[i] * vectorB[i];
 		}
-		double m = Math.sqrt(m1*m2);
-		return a/m;
+		if (m1 == 0 || m2 == 0) {
+			return 0;
+		}
+		double m = Math.sqrt(m1 * m2);
+		return a / m;
 	}
 	/**
-	 * 把矩阵的上三角转为数组，并让该数组的每个元素减去该数组所有元素的平均数
-	 * @param matrix
-	 * @return 
+	 * 获取单个节点的相关系数
+	 * @param v
+	 * @return
 	 */
-	public double[] toMinusAvgArray(int[][] matrix) {
-		double[] array = new double[length * (length - 1) /2];
-		double avg = 0;
+	public double getVertexGTDCC(Vertex v){
+		int length = vertexs.size() - 1;
+		int index = vertexs.indexOf(v);
+		if(index == -1){
+			throw new RuntimeException(v.dirId+"_"+v.title+"该节点不在图中");
+		}
+		double [] vectorUser = new double[length];
+		double [] vectorSite = new double[length];
+		
+		for(int i = 0 ; i < index; i ++){
+			vectorUser[i] = userMatrix[i][index];
+		}
+		if(index != length){
+			for(int i = index; i < length; i++){
+				vectorUser[i] = userMatrix[index][i];
+			}
+		}
+		
+		for(int i = 0 ; i < index; i ++){
+			vectorSite[i] = siteMatrix[i][index];
+		}
+		if(index != length){
+			for(int i = index; i < length; i++){
+				vectorSite[i] = siteMatrix[index][i];
+			}
+		}
+		
+		return getCorrelationIndex(vectorUser,vectorSite);
+	}
+
+	/**
+	 * 把矩阵的上三角转为数组
+	 * 
+	 * @param matrix
+	 * @return
+	 */
+	private double[] toArray(int[][] matrix) {
+		int length = vertexs.size();
+		double[] array = new double[length * (length - 1) / 2];
 		for (int i = 0, a = 0; i < length; i++) {
 			for (int j = i + 1; j < length; j++) {
 				array[a] = matrix[i][j];
-				avg += array[a];
 				++a;
 			}
+		}
+		return array;
+	}
+
+	/**
+	 * 数组的每个元素减去该数组所有元素的平均数
+	 * 
+	 * @param matrix
+	 * @return
+	 */
+	private double[] minusAvg(double[] array) {
+		int avg = 0;
+		for (int i = 0, l = array.length; i < l; i++) {
+			avg += array[i];
 		}
 		avg = avg / array.length;
 		for (int i = 0, l = array.length; i < l; i++) {
@@ -177,4 +234,6 @@ public class Tree {
 		}
 		return array;
 	}
+	
+	
 }

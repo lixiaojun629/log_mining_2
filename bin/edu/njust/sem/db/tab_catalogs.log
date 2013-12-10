@@ -1,4 +1,2 @@
 tab_catalogs  目录路径表
-tab_catalogs1 目录路径表（其中一天目录路径的长度至少大于等于2）
-tab_catalogs2 目录路径表（目录路径序号从1开始，为连续整数）
 tab_catalogs3 只包含叶子目录的目录路径表

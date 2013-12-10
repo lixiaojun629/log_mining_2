@@ -1,6 +1,7 @@
 package edu.njust.sem.test;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -21,11 +22,8 @@ public class Test1 {
 			System.out.println(v.dirId);
 		}
 		Graph graph = new Graph(catalogFreqMatrix, vertexs);
-		Tree tree = graph.createMinSpanningTree();
-		PrintUtil.printMatrix(tree.getUserMatrix());
+		List<Tree> tree = graph.createMinSpanningTree();
 		System.out.println("---------我是万恶的分割线-----------------");
-		PrintUtil.printMatrix(tree.getSiteMatrix());
-		System.out.println(tree.getGTDCC());
 		
 	}
 	public static void main(String[] args) {

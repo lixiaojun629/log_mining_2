@@ -79,7 +79,6 @@ public class LogImport {
 		try {
 			scan = new Scanner(new File("D:\\log\\test.txt"));
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		scan.useDelimiter("\r\n");
@@ -94,7 +93,6 @@ public class LogImport {
 					System.out.println(i + " : " + entries[i]);
 				}
 			} catch (LogFormatException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if (this.validateLog(entries)) {

@@ -10,7 +10,7 @@ import java.util.HashSet;
 import edu.njust.sem.util.DBUtil;
 
 public class CreateTabTrans {
-	private String query = "SELECT id, session_id,url_id,user_id,ip,visit_time FROM tab_trans where session_id = ?";
+	private String query = "SELECT id, session_id,url_id,user_id,visit_time FROM tab_trans where session_id = ?";
 	private String update = "update tab_trans set session_id = session_id + 1 where id >= ?";
 	private Connection conn = DBUtil.getConn();
 	private PreparedStatement psQuery = conn.prepareStatement(query);

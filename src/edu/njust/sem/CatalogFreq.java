@@ -23,7 +23,7 @@ public class CatalogFreq {
 	 * @throws SQLException
 	 */
 	public CatalogFreq(Integer[] path) throws SQLException {
-		String sql = "SELECT catalog_id FROM tab_catalogs2 where session_id = ?";
+		String sql = "SELECT catalog_id FROM tab_catalogs where session_id = ?";
 		conn = DBUtil.getConn();
 		PreparedStatement ps = conn.prepareStatement(sql);
 		ResultSet rs = null;

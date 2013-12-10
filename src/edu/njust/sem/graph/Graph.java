@@ -1,5 +1,7 @@
 package edu.njust.sem.graph;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 带权值的最小生成树算法
@@ -12,8 +14,6 @@ public class Graph {
 	private int currentVert;
 	private PriorityQueen priorityQueen;
 	private int nTree = 0; // number of verts in tree
-	// 最小生成树
-	private Tree tree;
 
 	/**
 	 * 
@@ -27,14 +27,16 @@ public class Graph {
 		nVerts = matrix.length;
 		vertexArray = vertexs;
 		priorityQueen = new PriorityQueen(matrix.length);
-		tree = new Tree(vertexs);
 	}
 
 	/**
 	 * 由图变成最小生成树
+	 * 
 	 * @return 最小生成树
 	 */
-	public Tree createMinSpanningTree() {
+	public List<Tree> createMinSpanningTree() {
+		List<Tree> trees = new ArrayList<>();
+		Tree currTree = new Tree();
 		currentVert = 0; // start at 0
 		// while not all verts in tree
 		while (nTree < nVerts - 1) {
@@ -54,17 +56,28 @@ public class Graph {
 			}
 			// no vertices in PQ?
 			if (priorityQueen.size() == 0) {
-				throw new RuntimeException("此图非连通");
+				//throw new RuntimeException("此图非连通");
+				trees.add(currTree);
+				currTree = new Tree();
+				for(int i = 0; i< vertexArray.length; i++){
+					if(vertexArray[i].flag == false){
+						currentVert = i;
+						break;
+					}
+				}
+			}else{
+				// remove edge with minimum distance, from PQ
+				Edge theEdge = priorityQueen.removeMin();
+				currentVert = theEdge.destVert;
+				currTree.addEdge(vertexArray[theEdge.srcVert],vertexArray[theEdge.destVert]);
 			}
-			// remove edge with minimum distance, from PQ
-			Edge theEdge = priorityQueen.removeMin();
-			currentVert = theEdge.destVert;
-			tree.addEdge(theEdge.srcVert, theEdge.destVert);
+			
 		}
+		trees.add(currTree);
 		for (int j = 0; j < nVerts; j++) {
 			vertexArray[j].flag = false;
 		}
-		return tree;
+		return trees;
 	}
 
 	/**

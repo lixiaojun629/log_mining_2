@@ -7,7 +7,7 @@ public class Vertex {
 	// 顶点状态的标志，例如在最小生成树算法中标识该顶点是否已经在树中，在图的遍历中标识该顶点是否已被访问过
 	public boolean flag = false;
 	// 目录的具体内容（e.g. 'Linght&Lighting'）
-	public String content;
+	public String title;
 	// 目录的级别(0,1,2,3)
 	public int degree = 3;
 
@@ -15,11 +15,11 @@ public class Vertex {
 	 * 构造函数
 	 * 
 	 * @param dirId
-	 * @param content
+	 * @param title
 	 */
-	public Vertex(int dirId, String content) {
+	public Vertex(int dirId, String title) {
 		this.dirId = dirId;
-		this.content = content;
+		this.title = title;
 		while (dirId % 100 == 0) {
 			--degree;
 			dirId /= 100;
